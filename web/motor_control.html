@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hubble Motor Jog</title>
+<style>
+:root { color-scheme: dark; --bg:#10161d; --card:#1b2631; --line:#334556; --text:#eaf0f5; --muted:#9baab8; --accent:#63c7ff; --ok:#78d69b; }
+* { box-sizing:border-box }
+body { max-width:760px; margin:0 auto; padding:16px; background:var(--bg); color:var(--text); font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif }
+h1 { margin:0 0 4px; font-size:19px }
+.sub,.desc,.note { color:var(--muted); font-size:12px }
+.sub { margin-bottom:14px }
+.bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px; padding:10px; margin-bottom:10px; border:1px solid var(--line); border-radius:10px; background:var(--card) }
+.bar label,.settings label { color:var(--muted); font-size:11px }
+input[type=text] { width:82px; padding:7px; border:1px solid var(--line); border-radius:6px; background:#101820; color:var(--text) }
+button { padding:8px 11px; border:1px solid #4a6478; border-radius:7px; background:#293b4b; color:var(--text); font:inherit; cursor:pointer; user-select:none; touch-action:none }
+button:hover { background:#354e62 }
+button:disabled { opacity:.45; cursor:not-allowed }
+.connect { background:#22613d; border-color:#318354 }
+.disconnect { background:#49353b; border-color:#74464f }
+.stop { margin-left:auto; background:#713c3c; border-color:#a55353 }
+.status { margin-left:auto; color:var(--muted); font-size:12px }
+.status.ok { color:var(--ok) }
+.status.bad { color:#ff9b9b }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+.axis { padding:13px; border:1px solid var(--line); border-radius:10px; background:var(--card) }
+.axis h2 { margin:0; font-size:16px }
+.axis h2 small { color:var(--muted); font-size:11px; font-weight:500 }
+.desc { margin:1px 0 10px }
+.readout { margin-bottom:10px; color:var(--accent); font-size:13px; font-variant-numeric:tabular-nums }
+.buttons { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px }
+.jog { padding:12px 6px; font-size:16px; font-weight:700 }
+.jog.pressed { background:#8b5b21; border-color:#e6a34c }
+.settings { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+.settings label { display:block; margin-bottom:4px }
+.settings input { width:100%; accent-color:var(--accent) }
+.value { float:right; color:var(--text); font-variant-numeric:tabular-nums }
+.note { margin-top:12px; font-size:11px }
+.hint { margin-top:12px; padding:7px 9px; border-left:3px solid var(--accent); border-radius:0 6px 6px 0; background:#19232d; font-size:12px }
+@media(max-width:560px) { body{padding:10px}.grid{grid-template-columns:1fr}.status{width:100%;margin-left:0} }
+</style>
+</head>
+<body>
+<h1>Hubble motor jog</h1>
+<div class="sub">Independent hold-to-move control for Feetech servo IDs 1 and 2</div>
+<div class="bar">
+  <label for="port">Serial port</label><input id="port" type="text" value="COM5" aria-label="Serial port">
+  <button id="connect" class="connect">Connect</button><button id="disconnect" class="disconnect" disabled>Disconnect</button>
+  <button id="stopall" class="stop" disabled>Stop all</button><span id="link" class="status">Not connected</span>
+</div>
+<main class="grid">
+  <section class="axis" data-id="1">
+    <h2>Pan <small>ID 1</small></h2><div class="desc">Horizontal axis</div>
+    <div class="readout" id="readout-1">Position — · — V · — °C</div>
+    <div class="buttons"><button class="jog" data-dir="-1" disabled>◀ Hold</button><button class="jog" data-dir="1" disabled>Hold ▶</button></div>
+    <div class="settings">
+      <div><label>Speed <span class="value"><b id="speed-val-1">200</b> counts/s</span></label><input class="speed" type="range" min="30" max="600" step="10" value="200"></div>
+      <div><label>Max travel per hold <span class="value"><b id="limit-val-1">30</b>°</span></label><input class="limit" type="range" min="5" max="120" step="5" value="30"></div>
+    </div>
+  </section>
+  <section class="axis" data-id="2">
+    <h2>Tilt <small>ID 2</small></h2><div class="desc">Vertical axis</div>
+    <div class="readout" id="readout-2">Position — · — V · — °C</div>
+    <div class="buttons"><button class="jog" data-dir="-1" disabled>▼ Hold</button><button class="jog" data-dir="1" disabled>Hold ▲</button></div>
+    <div class="settings">
+      <div><label>Speed <span class="value"><b id="speed-val-2">200</b> counts/s</span></label><input class="speed" type="range" min="30" max="600" step="10" value="200"></div>
+      <div><label>Max travel per hold <span class="value"><b id="limit-val-2">30</b>°</span></label><input class="limit" type="range" min="5" max="120" step="5" value="30"></div>
+    </div>
+  </section>
+</main>
+<div class="hint">Jogging stops when you release. Each hold is limited to the selected travel, and commands stay within the servo's 0–4095 position range.</div>
+<div class="note">Start with the telescope unloaded and keep the mechanism clear. Release the button or press Stop all to stop sending targets. Speed is the Feetech position speed in counts per second.</div>
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const link = $('#link');
+const connectBtn = $('#connect'), disconnectBtn = $('#disconnect'), stopAllBtn = $('#stopall');
+const held = new Map();
+let connected = false, pollTimer = null;
+
+async function api(path, data) {
+  const response = await fetch(path, {
+    method: data ? 'POST' : 'GET',
+    headers: data ? {'Content-Type':'application/json'} : {},
+    body: data ? JSON.stringify(data) : undefined,
+    cache: 'no-store'
+  });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Request failed');
+  return result;
+}
+function setLink(text, kind='') { link.textContent=text; link.className='status '+kind; }
+function enableControls(on) {
+  connected=on; disconnectBtn.disabled=!on; stopAllBtn.disabled=!on;
+  connectBtn.disabled=on; $('#port').disabled=on;
+  $$('.jog').forEach(button=>button.disabled=!on);
+}
+function showState(data) {
+  for (const servo of data.servos || []) {
+    const card=$(`.axis[data-id="${servo.id}"]`), output=$(`#readout-${servo.id}`);
+    if (!card) continue;
+    output.textContent=servo.online
+      ? `Position ${servo.position} / 4095 · ${Number(servo.voltage).toFixed(1)} V · ${servo.temperature} °C${servo.status?' · FAULT':''}`
+      : 'Servo offline';
+    output.style.color=servo.online?(servo.status?'#ff9b9b':'var(--accent)'):'#ff9b9b';
+    card.querySelectorAll('.jog').forEach(button=>button.disabled=!connected||!servo.online||!!servo.status);
+  }
+}
+async function poll() {
+  if (!connected || held.size) return;
+  try { const state=await api('/api/status'); showState(state); }
+  catch (error) { setLink(error.message,'bad'); }
+}
+async function connect() {
+  connectBtn.disabled=true; setLink('Connecting…');
+  try {
+    const state=await api('/api/connect',{port:$('#port').value.trim()||'COM5'});
+    enableControls(true); showState(state); setLink(`Connected · ${state.port}`,'ok');
+    pollTimer=setInterval(poll,1300);
+  } catch (error) { enableControls(false); setLink(error.message,'bad'); }
+  finally { connectBtn.disabled=connected; }
+}
+async function disconnect() {
+  await stopAll();
+  try { await api('/api/disconnect',{}); } catch (error) {}
+  clearInterval(pollTimer); enableControls(false); setLink('Not connected');
+}
+const sleep = ms => new Promise(resolve=>setTimeout(resolve,ms));
+async function startHold(id, direction, button) {
+  if (!connected || held.has(id)) return;
+  const card=$(`.axis[data-id="${id}"]`);
+  const state={held:true,button,started:false,stopSent:false}; held.set(id,state); button.classList.add('pressed');
+  try {
+    await api('/api/jog/start',{id:Number(id),direction,speed:Number(card.querySelector('.speed').value),limit_deg:Number(card.querySelector('.limit').value)});
+    state.started=true;
+    while (state.held && connected) {
+      const result=await api('/api/jog/tick',{id:Number(id)});
+      if (!result.active) {
+        state.held=false;
+        if (result.limit) setLink(`ID ${id}: hold limit reached`);
+        break;
+      }
+      await sleep(90);
+    }
+  } catch (error) { state.held=false; setLink(error.message,'bad'); }
+  finally {
+    button.classList.remove('pressed');
+    if (held.get(id)===state) held.delete(id);
+    if (!state.stopSent) { state.stopSent=true; try { await api('/api/jog/stop',{id:Number(id)}); } catch (error) {} }
+    poll();
+  }
+}
+async function stopOne(id) {
+  const state=held.get(id); if (!state) return;
+  state.held=false;
+  if (!state.started) return;
+  if (!state.stopSent) { state.stopSent=true; try { await api('/api/jog/stop',{id:Number(id)}); } catch (error) {} }
+}
+async function stopAll() {
+  for (const state of held.values()) { state.held=false; if (state.started) state.stopSent=true; }
+  try { await api('/api/stop-all',{}); } catch (error) {}
+}
+
+$$('.axis').forEach(card=>{
+  const id=card.dataset.id;
+  card.querySelector('.speed').addEventListener('input',e=>$(`#speed-val-${id}`).textContent=e.target.value);
+  card.querySelector('.limit').addEventListener('input',e=>$(`#limit-val-${id}`).textContent=e.target.value);
+  card.querySelectorAll('.jog').forEach(button=>{
+    button.addEventListener('pointerdown',event=>{event.preventDefault();button.setPointerCapture(event.pointerId);startHold(id,Number(button.dataset.dir),button);});
+    const release=()=>stopOne(id);
+    button.addEventListener('pointerup',release); button.addEventListener('pointercancel',release); button.addEventListener('lostpointercapture',release);
+  });
+});
+connectBtn.addEventListener('click',connect); disconnectBtn.addEventListener('click',disconnect); stopAllBtn.addEventListener('click',stopAll);
+window.addEventListener('blur',stopAll);
+window.addEventListener('pagehide',()=>{fetch('/api/stop-all',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',keepalive:true});});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAll();});
+</script>
+</body>
+</html>

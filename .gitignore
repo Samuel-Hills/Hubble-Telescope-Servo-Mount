@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Blender backup and temporary render frames
+*.blend1
+exports/visual_360_frames/
+
+# Editor / OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Slicer / machine output (keep source CAD and exported meshes)
+*.gcode
+*.bgcode
+*.3mf
