@@ -5,7 +5,7 @@
 | Item | Known from supplied files | Current treatment |
 |---|---|---|
 | Telescope mass | User supplied: 0.925 kg without LEGO stand | Use as minimum moving mass. Add the moving cradle/adapter mass when measured. |
-| Telescope envelope | LEGO product listing: approx. 380 × 380 × 320 mm; door open for the published envelope | Reserve a wide open clearance zone. The envelope is not a swept-volume model. |
+| Telescope envelope | Approx. 380 × 380 × 320 mm was recorded from a product listing in earlier notes; the exact source URL is not archived | Reserve a wide open clearance zone. The envelope is not a swept-volume model. |
 | Telescope geometry / CG | Not dimensioned in the supplied instructions | Must locate by balancing the assembled model with solar panels installed. |
 | Telescope-side interface | User reports two LEGO cross-shaped features on opposite sides, about 105 mm centre-to-centre, near the telescope centre of mass | Side-to-side horizontal tilt axis through the U-yoke. Driven side uses an axial cross socket; the passive side uses a printed cross pivot with a round journal running directly in the yoke bore. Current sockets assume male cross axles project sideways; reverse the interface if the actual model has female holes. |
 | Servo body | Datasheet: 45.2 × 24.7 × 35 mm; STEP bounding box: 45.22 × 37.8 × 24.72 mm including protrusions | Bay uses the nominal body envelope with 0.6 mm clearance; check actual printed fit and case orientation. The detailed STEP has invalid solids in the original file, so the assembly layout uses a clean simplified envelope instead. |

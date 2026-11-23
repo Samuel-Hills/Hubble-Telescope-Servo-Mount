@@ -55,3 +55,13 @@ passive-pivot solid is valid and has no modeled interference with the right
 yoke. This is a CAD geometry check only. It does not establish bearing-like
 friction, print accuracy, material strength, servo compatibility, LEGO fit,
 balance or collision-free motion through ±120° pan / ±30° tilt.
+
+## Build and validation record
+
+The checked-in CAD export baseline was generated with CPython 3.13.14 and
+CadQuery 2.8.0. The passive-pivot geometry was checked as a valid solid with no
+modeled interference against the right yoke. No automated regression suite or
+continuous-integration build is configured. That geometry check does not
+validate print accuracy, strength, friction, servo torque, LEGO fit, stability
+or the full swept motion. The release gates are listed in
+[verification-plan.md](verification-plan.md).

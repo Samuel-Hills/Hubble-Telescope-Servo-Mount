@@ -1,2 +1,2 @@
-cadquery>=2.8,<3.0
-pyserial>=3.5,<4
+cadquery==2.8.0
+pyserial==3.5

@@ -75,11 +75,18 @@ They are not load-bearing CAD and do not prove collision-free motion.
 
 ## Regenerate the CAD and views
 
-Install Python with a CadQuery-compatible environment, then from the repository
-root run:
+The checked-in CAD exports were generated with CPython 3.13.14 and CadQuery
+2.8.0. On Windows, create a Python 3.13 virtual environment and install the
+pinned direct dependencies:
+
+    py -3.13 -m venv .venv
+    .\.venv\Scripts\Activate.ps1
+    python -m pip install --upgrade pip
+    python -m pip install -r requirements.txt
+
+Then from the repository root regenerate CAD with:
 
 ```powershell
-python -m pip install -r requirements.txt
 python src/hubble_stand.py
 ```
 
@@ -142,3 +149,37 @@ verified LEGO dimensions.
 - [Assembly and fit procedure](docs/assembly_notes.md)
 - [Motor-control setup and safeguards](docs/motor-control.md)
 - [Bench test history](docs/hardware-test-log.md)
+- [Preliminary bill of materials](docs/bill-of-materials.md)
+- [Verification and release plan](docs/verification-plan.md)
+- [Contribution workflow](CONTRIBUTING.md)
+
+## Repository maturity, setup and reuse
+
+Direct dependencies are pinned in [requirements.txt](requirements.txt).
+Transitive package versions are not fully locked.
+
+The repository does not currently have a continuous-integration workflow or an
+automated mechanical regression suite. The servo scripts are for explicitly
+prompted bench checks and are not a substitute for the staged physical checks
+in the [verification plan](docs/verification-plan.md). A successful export is
+not evidence of structural strength, safe motion or telescope fit.
+
+Before changing the design, read [the contribution workflow](CONTRIBUTING.md),
+[the preliminary bill of materials](docs/bill-of-materials.md) and
+[the verification plan](docs/verification-plan.md). The [project status](docs/project-status.md)
+is the current list of unresolved fit, hardware and safety checks.
+
+No software or design reuse license has been selected for this repository.
+The absence of a license file means no open-source redistribution permission
+is stated here; ask the repository owner before reusing or redistributing the
+work.
+
+## Repository map
+
+- src/ — parametric CAD, viewer generation, rendering and servo-control tools.
+- exports/ — current CAD parts, assemblies, renders and archived iterations.
+- reference/ — supplied servo datasheet and reference CAD.
+- docs/ — design rationale, assumptions, assembly instructions, test history,
+  procurement BOM, project status and release verification gates.
+- web/ — local servo jog-control interface.
+- CONTRIBUTING.md — change-control rules and protected servo-axis interfaces.

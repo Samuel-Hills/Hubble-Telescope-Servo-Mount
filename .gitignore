@@ -19,3 +19,16 @@ desktop.ini
 *.gcode
 *.bgcode
 *.3mf
+
+# Local secrets and common tooling output
+.env
+.env.*
+!.env.example
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+build/
+dist/
+*.egg-info/
