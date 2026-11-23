@@ -20,3 +20,10 @@
 - Pinned the direct Python dependency versions used for the current CAD export.
 - Recorded the lack of CI, automated mechanical regression coverage and a
   selected reuse license so repository maturity is explicit.
+
+## 2026-11-23 — portable Windows setup
+
+- Added a one-time setup script that creates a repository-local Python 3.13
+  environment and installs the pinned dependencies.
+- Updated the motor-control launcher and setup guide to use that environment
+  after cloning or copying the repository to another Windows PC.

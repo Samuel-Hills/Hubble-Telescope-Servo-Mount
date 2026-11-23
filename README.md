@@ -10,6 +10,30 @@ uses two Feetech STS3215-C044 bus servos: one for pan and one for tilt.
 > assembly. Read [Project status](docs/project-status.md) before printing or
 > applying power.
 
+## Set up on another PC
+
+For Windows, install 64-bit Python 3.13 with the Python Launcher. Clone or copy
+this repository, then double-click [setup_windows.bat](setup_windows.bat). It
+creates a project-local .venv and installs the pinned dependencies from
+requirements.txt. Internet access is needed for the first install.
+
+After setup, double-click run_motor_control.bat to start the local jog page.
+The browser opens automatically. The serial-port field starts at COM5; change
+it to the port assigned by the other PC if needed.
+
+For a terminal-only setup on Windows:
+
+    py -3.13 -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    .\.venv\Scripts\python.exe src\motor_control_web.py
+
+For macOS or Linux, use Python 3.13 and install from the repository root:
+
+    python3.13 -m venv .venv
+    .venv/bin/python -m pip install -r requirements.txt
+    .venv/bin/python src/motor_control_web.py
+
+
 ![Current stand and approximate Hubble model](exports/holder_overview.png)
 
 The tilt axis uses a driven cross socket on one side and a bearing-free printed
@@ -76,18 +100,10 @@ They are not load-bearing CAD and do not prove collision-free motion.
 ## Regenerate the CAD and views
 
 The checked-in CAD exports were generated with CPython 3.13.14 and CadQuery
-2.8.0. On Windows, create a Python 3.13 virtual environment and install the
-pinned direct dependencies:
-
-    py -3.13 -m venv .venv
-    .\.venv\Scripts\Activate.ps1
-    python -m pip install --upgrade pip
-    python -m pip install -r requirements.txt
-
-Then from the repository root regenerate CAD with:
+2.8.0. After the one-time setup above, regenerate CAD from the repository root:
 
 ```powershell
-python src/hubble_stand.py
+.venv\Scripts\python.exe src\hubble_stand.py
 ```
 
 This writes component STEP/STL pairs and the assembly STEP/GLB to `exports/`.
@@ -96,7 +112,7 @@ and run:
 
 ```powershell
 blender -b --python src/make_visual_model.py
-python src/make_html_viewer.py
+.venv\Scripts\python.exe src\make_html_viewer.py
 ```
 
 To render a new orbit video, Blender 5.x and `ffmpeg` must be on `PATH`:
@@ -110,13 +126,13 @@ See [`exports/README.md`](exports/README.md) for artifact names and
 
 ## Motor control
 
-The small local jog controller runs with:
+On Windows, run setup_windows.bat once and then run run_motor_control.bat. From a terminal using the project environment, run:
 
 ```powershell
-python src/motor_control_web.py
+.venv\Scripts\python.exe src\motor_control_web.py
 ```
 
-or launch `run_motor_control.bat`. It serves `http://127.0.0.1:8765`, uses
+The app serves `http://127.0.0.1:8765`, uses
 COM5 by default, and addresses servo IDs 1 and 2. Connecting is explicit; no
 movement command is sent until a jog button is held. Release the button or use
 **Stop all** to stop jogging. Read the [motor-control notes](docs/motor-control.md)
@@ -124,7 +140,7 @@ and [hardware test log](docs/hardware-test-log.md) before use. The safer
 read-only servo check is:
 
 ```powershell
-python src/test_servos.py --port COM5 --ids 1 2
+.venv\Scripts\python.exe src\test_servos.py --port COM5 --ids 1 2
 ```
 
 ## Inputs and assumptions
@@ -183,3 +199,4 @@ work.
   procurement BOM, project status and release verification gates.
 - web/ — local servo jog-control interface.
 - CONTRIBUTING.md — change-control rules and protected servo-axis interfaces.
+- setup_windows.bat — create the local Python environment and install dependencies.

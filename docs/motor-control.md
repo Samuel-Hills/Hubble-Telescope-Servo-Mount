@@ -1,5 +1,13 @@
 # Motor-control setup
 
+## First-time setup on Windows
+
+Install 64-bit Python 3.13 with the Python Launcher. Double-click
+setup_windows.bat once; it creates the repository-local .venv and installs
+requirements.txt. Then double-click run_motor_control.bat. The first install
+needs internet access. The scripts use paths relative to the repository, so
+the folder can be cloned or copied to another PC.
+
 ## Hardware and defaults
 
 - Board: Waveshare bus-servo controller, USB serial adapter reported as COM5.
@@ -8,16 +16,16 @@
 - Bench supply used in the reported test: 5 V / 5 A. Live servo telemetry
   during the test showed about 5.4–5.6 V.
 
-Run the local jog page with `run_motor_control.bat` or:
+On Windows, use run_motor_control.bat. From a terminal with the project environment, run:
 
 ```powershell
-python src/motor_control_web.py
+.venv\Scripts\python.exe src\motor_control_web.py
 ```
 
-The page is served at `http://127.0.0.1:8765`. Press **Connect** before use;
-connection opens COM5 but does not move a servo. Each axis has its own jog
-buttons, speed and maximum travel-per-hold control. Release a button or press
-**Stop all** to end a jog. The server also stops its jog targets on page blur,
+The page is served at `http://127.0.0.1:8765`. Press **Connect** before use.
+It opens the selected serial port but sends no movement command. Each axis has
+independent jog buttons, speed and maximum travel-per-hold controls. Release a
+button or press **Stop all** to end a jog. The server also stops its jog targets on page blur,
 page hiding and disconnect.
 
 The server blocks a new jog if telemetry is missing, reports a nonzero status,
@@ -30,7 +38,7 @@ page as a safety controller or as a hard travel stop.
 The default script is read-only:
 
 ```powershell
-python src/test_servos.py --port COM5 --ids 1 2
+.venv\Scripts\python.exe src\test_servos.py --port COM5 --ids 1 2
 ```
 
 To make a small prompted test move for one servo, the script supports
