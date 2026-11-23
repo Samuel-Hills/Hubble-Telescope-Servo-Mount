@@ -185,10 +185,15 @@ Before changing the design, read [the contribution workflow](CONTRIBUTING.md),
 [the verification plan](docs/verification-plan.md). The [project status](docs/project-status.md)
 is the current list of unresolved fit, hardware and safety checks.
 
-No software or design reuse license has been selected for this repository.
-The absence of a license file means no open-source redistribution permission
-is stated here; ask the repository owner before reusing or redistributing the
-work.
+## License
+
+The original parametric mechanical design, CAD exports and engineering
+documentation are licensed under [CERN-OHL-P-2.0](LICENSE). The original
+software tools and motor-control interface are licensed under MIT
+([license text](LICENSES/MIT.txt)). See [the license map](LICENSES/README.md)
+for the exact file scopes and third-party exclusions. The Feetech reference
+files in [`reference/`](reference/) remain under their respective owners'
+terms; this repository's licenses do not relicense them.
 
 ## Repository map
 

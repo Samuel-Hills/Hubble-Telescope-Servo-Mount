@@ -1,5 +1,10 @@
 # Reference inputs
 
+The vendor datasheet and servo model listed below are third-party reference
+materials. They are included for design reference only and are not covered by
+the project licenses in the repository root. Their respective rights holders'
+terms continue to apply. See [`../LICENSES/README.md`](../LICENSES/README.md).
+
 | File | Use | Notes |
 |---|---|---|
 | `Feetech_STS3215-C044_Datasheet.pdf` | Supplied C044 dimensional/electrical source | Use the specific C044 sheet for servo dimensions and ratings. |
